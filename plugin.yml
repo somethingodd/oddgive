@@ -1,0 +1,23 @@
+name: OddGive
+main: info.somethingodd.bukkit.odd.give.OddGive
+version: 0.3
+website: http://bukkit.somethingodd.info
+author: petteyg359
+description: >
+             Item giving stuff.
+commands:
+  i:
+    usage: |
+           /<command> item quantity
+           Example: /<command> dirt 5 - Gives you 5 dirt.
+           Example: /<command> cobblestone - Gives you a stack of (64) cobblestone.
+  give:
+    usage: |
+           /<command> player item quantity
+           Example: /<command> Jimbo dirt 5 - Gives Jimbo 5 dirt.
+           Example: /<command> Jill cobblestone - Gives Jill a stack of (64) cobblestone.
+  i0:
+    usage: |
+           /<command> [player]
+           Example: /<command> - clears your inventory
+           Example: /<command> Jimbo - clears Jimbo's inventory
