@@ -1,6 +1,6 @@
 name: OddGive
-main: info.somethingodd.bukkit.odd.give.OddGive
-version: 0.3
+main: info.somethingodd.bukkit.OddGive.OddGive
+version: 0.5.2
 website: http://bukkit.somethingodd.info
 author: petteyg359
 description: >
