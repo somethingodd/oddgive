@@ -1,8 +1,9 @@
 name: OddGive
 main: info.somethingodd.bukkit.OddGive.OddGive
-version: 0.5.2
+version: 0.7.8
 website: http://bukkit.somethingodd.info
 author: petteyg359
+depend: [OddItem]
 description: >
              Item giving stuff.
 commands:
