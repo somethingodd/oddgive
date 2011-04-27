@@ -66,10 +66,65 @@ public class OddGive extends JavaPlugin {
         }
     }
 
-    private void take(CommandSender sender, String[] args)
-    {
+    private void give(Player player, ItemStack itemStack) {
+        player.getInventory().addItem(itemStack);
+    }
+
+    private void give(CommandSender sender, String[] args) {
         Set<Player> players = new HashSet<Player>();
-        Set<Material> items = new HashSet<Material>();
+        Set<ItemStack> items = new HashSet<ItemStack>();
+        if (args.length == 0)
+            return;
+        if (args[0].equals("*")) {
+            if (args.length > 1)
+                players.addAll(Arrays.asList(getServer().getOnlinePlayers()));
+        } else {
+            int i = 0;
+            while (getServer().getPlayer(args[i]) != null) {
+                players.add(getServer().getPlayer(args[i]));
+                i++;
+            }
+            if (args[i].equals("*")) {
+                for (Player p : players)
+                    p.getInventory().clear();
+                return;
+            } else {
+                for (; i < args.length; i++) {
+                    ItemStack is;
+                    try {
+                        is = oddItem.getItemStack(args[i]);
+                        try {
+                            is.setAmount(Integer.decode(args[i + 1]));
+                            i++;
+                        } catch (NumberFormatException e) {
+                            is.setAmount(defaultQuantity);
+                        } catch (ArrayIndexOutOfBoundsException e) {
+                            is.setAmount(defaultQuantity);
+                        }
+                        items.add(is);
+                    } catch (IllegalArgumentException iae) {
+                        sender.sendMessage(logPrefix + "Invalid item: " + args[i]);
+                    }
+                }
+            }
+            if (players.isEmpty())
+                players.add((Player) sender);
+            for (Player p : players) {
+                Inventory inventory = p.getInventory();
+                for (ItemStack m : items) {
+                    boolean deny = false;
+                    if ((!blacklist && !itemlist.contains(m.getType().name())) || (blacklist && itemlist.contains(m.getType().name())))
+                        deny = true;
+                    if (!(deny && !(sender.isOp() || (Permissions != null && Permissions.has((Player) sender, "odd.give.override")))))
+                        inventory.addItem(m);
+                }
+            }
+        }
+    }
+
+    private void take(CommandSender sender, String[] args) {
+        Set<Player> players = new HashSet<Player>();
+        Set<ItemStack> items = new HashSet<ItemStack>();
         if (args.length == 0) {
             if (!(sender instanceof Player))
                 sender.sendMessage("You have no inventory, silly!");
@@ -101,9 +156,17 @@ public class OddGive extends JavaPlugin {
                     ItemStack is;
                     try {
                         is = oddItem.getItemStack(args[i]);
-                        items.add(is.getType());
+                        try {
+                            is.setAmount(Integer.decode(args[i + 1]));
+                            i++;
+                        } catch (NumberFormatException e) {
+                            is.setAmount(Integer.MAX_VALUE);
+                        } catch (ArrayIndexOutOfBoundsException e) {
+                            is.setAmount(Integer.MAX_VALUE);
+                        }
+                        items.add(is);
                     } catch (IllegalArgumentException iae) {
-                        sender.sendMessage(logPrefix + "Inavlid item: " + args[i]);
+                        sender.sendMessage(logPrefix + "Invalid item: " + args[i]);
                     }
                 }
             }
@@ -111,8 +174,21 @@ public class OddGive extends JavaPlugin {
                 players.add((Player) sender);
             for (Player p : players) {
                 Inventory inventory = p.getInventory();
-                for (Material m : items)
-                    inventory.remove(m);
+                for (ItemStack m : items) {
+                    ItemStack[] is = inventory.getContents();
+                    int q = m.getAmount();
+                    for (int j = 0; (q > 0 && j < is.length); j++) {
+                        if (is[j] != null && is[j].getType().equals(m.getType()) && (is[j].getData() == null || (is[j].getData() != null && is[j].getData().getData() == m.getData().getData()))) {
+                            if (is[j].getAmount() >= q) {
+                                is[j].setAmount(is[j].getAmount() - q);
+                                q -= is[j].getAmount();
+                            } else {
+                                q -= is[j].getAmount();
+                                inventory.clear(j);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -131,54 +207,9 @@ public class OddGive extends JavaPlugin {
                 if (!sender.isOp() && sender instanceof Player && Permissions != null && !Permissions.has((Player) sender, "odd.give.i0.other"))
                     return true;
             take(sender, args);
-        } else if (commandLabel.equals("i")) {
-            if (!(sender instanceof Player))
-                return false;
-            if (args.length == 1) {
-                item = args[0];
-                player = (Player) sender;
-            } else if (args.length == 2) {
-                try {
-                    quantity = Integer.decode(args[1]);
-                } catch (NumberFormatException nfe) {
-                    return false;
-                }
-                item = args[0];
-                player = (Player) sender;
-            }
-        } else if (commandLabel.equals("give")) {
-            if (sender instanceof Player) {
-                if (args.length == 2) {
-                    player = getServer().getPlayer(args[0]);
-                    item = args[1];
-                } else if (args.length == 3) {
-                    try {
-                        quantity = Integer.decode(args[2]);
-                    } catch (NumberFormatException nfe) {
-                        return false;
-                    }
-                }
-            } else {
-                if (args.length == 2) {
-                    player = getServer().getPlayer(args[0]);
-                    item = args[1];
-                } else if (args.length == 3) {
-                    player = getServer().getPlayer(args[0]);
-                    item = args[1];
-                    try {
-                        quantity = Integer.decode(args[2]);
-                    } catch (NumberFormatException nfe) {
-                        return false;
-                    }
-                }
-            }
+        } else if (commandLabel.equals("i") || commandLabel.equals("give")) {
+            give(sender, args);
         }
-        boolean deny = false;
-        if ((!blacklist && !itemlist.contains(item)) || (blacklist && itemlist.contains(item)))
-            deny = true;
-        if (deny && !(sender.isOp() || (Permissions != null && Permissions.has((Player) sender, "odd.give.override"))))
-            return true;
-        give(player, item, quantity, sender);
         return true;
     }
 
