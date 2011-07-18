@@ -3,7 +3,6 @@ package info.somethingodd.bukkit.OddGive;
 import com.nijiko.permissions.PermissionHandler;
 import com.nijikokun.bukkit.Permissions.Permissions;
 import info.somethingodd.bukkit.OddItem.OddItem;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -40,36 +39,6 @@ public class OddGive extends JavaPlugin {
     private static int defaultQuantity;
     private static String logPrefix;
 
-    /**
-     * Gives some quantity of an item to player
-     *
-     * @param player Destination player
-     * @param item Item type
-     * @param quantity Item quantity
-     * @param sender Source Player
-     */
-    private void give(Player player, String item, int quantity, CommandSender sender) {
-        if (player == null)
-            return;
-        Inventory i = player.getInventory();
-        ItemStack is;
-        try {
-            is = oddItem.getItemStack(item);
-            is.setAmount(quantity);
-            i.addItem(is);
-        } catch (IllegalArgumentException iae) {
-            if (sender instanceof Player) {
-                sender.sendMessage("Item " + item + " unknown. Closest match: " + iae.getMessage());
-            } else {
-                log.info(logPrefix + "Item " + item + " unknown. Closest match: " + iae.getMessage());
-            }
-        }
-    }
-
-    private void give(Player player, ItemStack itemStack) {
-        player.getInventory().addItem(itemStack);
-    }
-
     private void give(CommandSender sender, String[] args) {
         Set<Player> players = new HashSet<Player>();
         Set<ItemStack> items = new HashSet<ItemStack>();
@@ -84,27 +53,21 @@ public class OddGive extends JavaPlugin {
                 players.add(getServer().getPlayer(args[i]));
                 i++;
             }
-            if (args[i].equals("*")) {
-                for (Player p : players)
-                    p.getInventory().clear();
-                return;
-            } else {
-                for (; i < args.length; i++) {
-                    ItemStack is;
+            for (; i < args.length; i++) {
+                ItemStack is = null;
+                try {
+                    is = oddItem.getItemStack(args[i]);
                     try {
-                        is = oddItem.getItemStack(args[i]);
-                        try {
-                            is.setAmount(Integer.decode(args[i + 1]));
-                            i++;
-                        } catch (NumberFormatException e) {
-                            is.setAmount(defaultQuantity);
-                        } catch (ArrayIndexOutOfBoundsException e) {
-                            is.setAmount(defaultQuantity);
-                        }
-                        items.add(is);
-                    } catch (IllegalArgumentException iae) {
-                        sender.sendMessage(logPrefix + "Invalid item: " + args[i]);
+                        is.setAmount(Integer.decode(args[i + 1]));
+                        i++;
+                    } catch (NumberFormatException e) {
+                        is.setAmount(defaultQuantity);
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        is.setAmount(defaultQuantity);
                     }
+                    items.add(is);
+                } catch (IllegalArgumentException e) {
+                    sender.sendMessage(logPrefix + "Invalid item: " + args[i] + " Closest match: " + e.getMessage());
                 }
             }
             if (players.isEmpty())
@@ -147,7 +110,7 @@ public class OddGive extends JavaPlugin {
                 players.add(getServer().getPlayer(args[i]));
                 i++;
             }
-            if (args[i].equals("*")) {
+            if (args.length == i || args[i].equals("*")) {
                 for (Player p : players)
                     p.getInventory().clear();
                 return;
@@ -195,9 +158,6 @@ public class OddGive extends JavaPlugin {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String commandLabel, String[] args) {
-        String item = "";
-        Player player = null;
-        int quantity = defaultQuantity;
         if (Permissions == null && !sender.isOp())
             return true;
         if (!sender.isOp() && sender instanceof Player && Permissions != null && !Permissions.has((Player) sender, "odd.give." + commandLabel))
