@@ -1,6 +1,6 @@
 name: OddGive
 main: info.somethingodd.bukkit.OddGive.OddGive
-version: 0.8.4
+version: 0.8.4.1
 website: http://bukkit.somethingodd.info
 author: petteyg359
 depend: [OddItem]
@@ -22,4 +22,7 @@ commands:
            /<command> [player]
            Example: /<command> - clears your inventory
            Example: /<command> Jimbo - clears Jimbo's inventory
+  og:
+    usage: |
+           /<command> list - prints items in blacklist/whitelist
 

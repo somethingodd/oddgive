@@ -106,9 +106,8 @@ public class OddGive extends JavaPlugin {
             }
         } else {
             int i = 0;
-            while (getServer().getPlayer(args[i]) != null) {
+            for (; i < args.length && getServer().getPlayer(args[i]) != null; i++) {
                 players.add(getServer().getPlayer(args[i]));
-                i++;
             }
             if (args.length == i || args[i].equals("*")) {
                 for (Player p : players)
@@ -169,6 +168,12 @@ public class OddGive extends JavaPlugin {
             take(sender, args);
         } else if (commandLabel.equals("i") || commandLabel.equals("give")) {
             give(sender, args);
+        } else if (commandLabel.equals("og")) {
+            if (args.length == 1 && args[0].equals("list")) {
+                sender.sendMessage(itemlist.toString());
+                return true;
+            }
+            return false;
         }
         return true;
     }
