@@ -39,19 +39,21 @@ public class OddGive extends JavaPlugin {
     private static int defaultQuantity;
     private static String logPrefix;
 
-    private void give(CommandSender sender, String[] args) {
+    private void give(CommandSender sender, String[] args, boolean pl) {
         Set<Player> players = new HashSet<Player>();
         Set<ItemStack> items = new HashSet<ItemStack>();
         if (args.length == 0)
             return;
-        if (args[0].equals("*")) {
+        if (pl && args[0].equals("*")) {
             if (args.length > 1)
                 players.addAll(Arrays.asList(getServer().getOnlinePlayers()));
         } else {
             int i = 0;
-            while (getServer().getPlayer(args[i]) != null) {
-                players.add(getServer().getPlayer(args[i]));
-                i++;
+            if (pl) {
+                while (getServer().getPlayer(args[i]) != null) {
+                    players.add(getServer().getPlayer(args[i]));
+                    i++;
+                }
             }
             for (; i < args.length; i++) {
                 ItemStack is = null;
@@ -65,7 +67,8 @@ public class OddGive extends JavaPlugin {
                     } catch (ArrayIndexOutOfBoundsException e) {
                         is.setAmount(defaultQuantity);
                     }
-                    items.add(is);
+                    if (((blacklist && !itemlist.contains(args[i])) || (!blacklist && itemlist.contains(args[i])) || (Permissions != null && Permissions.has((Player) sender, "odd.give.override"))) || sender.isOp())
+                        items.add(is);
                 } catch (IllegalArgumentException e) {
                     sender.sendMessage(logPrefix + "Invalid item: " + args[i] + " Closest match: " + e.getMessage());
                 }
@@ -75,11 +78,7 @@ public class OddGive extends JavaPlugin {
             for (Player p : players) {
                 Inventory inventory = p.getInventory();
                 for (ItemStack m : items) {
-                    boolean deny = false;
-                    if ((!blacklist && !itemlist.contains(m.getType().name())) || (blacklist && itemlist.contains(m.getType().name())))
-                        deny = true;
-                    if (!(deny && !(sender.isOp() || (Permissions != null && Permissions.has((Player) sender, "odd.give.override")))))
-                        inventory.addItem(m);
+                    inventory.addItem(m);
                 }
             }
         }
@@ -166,8 +165,10 @@ public class OddGive extends JavaPlugin {
                 if (!sender.isOp() && sender instanceof Player && Permissions != null && !Permissions.has((Player) sender, "odd.give.i0.other"))
                     return true;
             take(sender, args);
-        } else if (commandLabel.equals("i") || commandLabel.equals("give")) {
-            give(sender, args);
+        } else if (commandLabel.equals("give")) {
+            give(sender, args, true);
+        } else if (commandLabel.equals("i")) {
+            give(sender, args, false);
         } else if (commandLabel.equals("og")) {
             if (args.length == 1 && args[0].equals("list")) {
                 sender.sendMessage(itemlist.toString());
