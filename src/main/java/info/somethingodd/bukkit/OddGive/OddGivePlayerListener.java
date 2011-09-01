@@ -1,14 +1,11 @@
 package info.somethingodd.bukkit.OddGive;
 
-import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.HashMap;
-
 public class OddGivePlayerListener extends PlayerListener {
-    private OddGive oddGive;
+    private OddGive oddGive = null;
 
     public OddGivePlayerListener(OddGive oddGive) {
         this.oddGive = oddGive;
@@ -16,11 +13,11 @@ public class OddGivePlayerListener extends PlayerListener {
 
     @Override
     public void onPlayerLogin(PlayerLoginEvent event) {
-        oddGive.lists.put(event.getPlayer(), new HashMap<String, Boolean>());
+        oddGive.calculate(event.getPlayer());
     }
 
     @Override
     public void onPlayerQuit(PlayerQuitEvent event) {
-        oddGive.lists.remove(event.getPlayer());
+        if (oddGive.lists != null) oddGive.lists.remove(event.getPlayer());
     }
 }

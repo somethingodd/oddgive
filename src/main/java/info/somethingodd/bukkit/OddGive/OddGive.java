@@ -16,63 +16,114 @@ package info.somethingodd.bukkit.OddGive;
 import com.nijiko.permissions.PermissionHandler;
 import com.nijikokun.bukkit.Permissions.Permissions;
 import info.somethingodd.bukkit.OddItem.OddItem;
+import info.somethingodd.bukkit.OddItem.OddItemGroup;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
  * @author Gordon Pettey (petteyg359@gmail.com)
  */
 public class OddGive extends JavaPlugin {
-    private Logger log = null;
-    private PluginDescriptionFile info = null;
+    protected Map<Player, Set<ItemStack>> lists = null;
+    protected Map<Integer, OddItemGroup> groups = null;
+    protected String logPrefix = null;
+    protected String mode = null;
+    protected Integer defaultQuantity = null;
+    protected static Logger log = null;
     private PermissionHandler ph = null;
-    private Boolean blacklist = null;
-    private Integer defaultQuantity = null;
-    private String logPrefix;
+    private PluginDescriptionFile info = null;
     private OddGiveCommandExecutor OGCE = null;
     private OddGivePlayerListener OGPL = null;
-    protected Map<Player, Map<String, Boolean>> lists = null;
-    private final String configurationFile = "plugins" + File.separator + "OddGive.yml";
+    private String configurationFile = null;
+    private static String permission = null;
 
     private void configure() {
-        File configurationFile = new File(this.configurationFile);
-        if (!configurationFile.exists())
+        File configFile = new File(configurationFile);
+        if (!configFile.exists())
             writeConfig();
-        Configuration config = new Configuration(configurationFile);
+        Configuration config = new Configuration(configFile);
+        defaultQuantity = config.getInt("defaultQuantity", 64);
+        mode = config.getString("mode", "blacklist");
+        groups = new HashMap<Integer, OddItemGroup>();
+        List<String> groupsList = config.getKeys("groups");
+        if (groupsList == null || groupsList.isEmpty()) {
+            log.warning(logPrefix + "No groups specified - item creation is unrestricted");
+        } else {
+            for (String n : groupsList) {
+                groups.put(config.getInt(n, groups.size()), OddItem.getItemGroup(n));
+            }
+        }
+        permission = config.getString("permission", "bukkit");
+    }
 
+    protected void calculate(Player player) {
+        if (lists == null) lists = new HashMap<Player, Set<ItemStack>>();
+        Set<ItemStack> list = new HashSet<ItemStack>();
+        for (int i = 1; i <= groups.size() && player.hasPermission("oddgive.groups."+i); i++) {
+            if (mode.equals("blacklist"))
+                for (ItemStack x : groups.get(i)) {
+                    boolean add = true;
+                    boolean remove = false;
+                    boolean blacklist = groups.get(i).getData().getBoolean("blacklist", true);
+                    for (ItemStack y : list)
+                        if (OddItem.compare(x, y)) {
+                            if (blacklist) add = false;
+                            else remove = true;
+                        }
+                    if (add) list.add(x);
+                    if (remove) list.remove(x);
+                }
+        }
+        lists.put(player, list);
     }
 
     @Override
     public void onDisable() {
-        lists = null;
         OGCE = null;
         OGPL = null;
-        getServer().getPluginManager().
+        lists = null;
         log.info(logPrefix + "disabled");
     }
 
     @Override
     public void onEnable() {
-        lists = new HashMap<Player, Map<String, Boolean>>();
+        for (Player player : getServer().getOnlinePlayers()) {
+            calculate(player);
+        }
+        configurationFile = getDataFolder() + System.getProperty("file.separator") + "OddGive.yml";
         OGCE = new OddGiveCommandExecutor(this);
         OGPL = new OddGivePlayerListener(this);
         getCommand("give").setExecutor(OGCE);
         getCommand("i").setExecutor(OGCE);
         getCommand("i0").setExecutor(OGCE);
-        getCommand("og").setExecutor(OGCE);
+        getCommand("oddgive").setExecutor(OGCE);
         getServer().getPluginManager().registerEvent(Event.Type.PLAYER_LOGIN, OGPL, Event.Priority.Normal, this);
         getServer().getPluginManager().registerEvent(Event.Type.PLAYER_QUIT, OGPL, Event.Priority.Normal, this);
-        try {
-            ph = ((Permissions) getServer().getPluginManager().getPlugin("Permissions")).getHandler();
-        } catch (NullPointerException e) {
+        Plugin p;
+        if (permission.equals("yeti")) {
+            p = getServer().getPluginManager().getPlugin("Permissions");
+            if (p != null)
+                ph = ((Permissions) p).getHandler();
+            else
+                log.warning("Permissions selected in config, but plugin not found");
         }
         log.info(logPrefix + info.getVersion() + " enabled");
     }

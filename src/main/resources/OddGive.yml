@@ -1,0 +1,11 @@
+defaultQuantity: 64
+mode: blacklist
+groups:
+    name: oddgive.guest
+    priority: 1
+    name: oddgive.member
+    priority: 2
+    name: oddgive.vip
+    priority: 3
+    name: oddgive.admin
+    priority: 4
