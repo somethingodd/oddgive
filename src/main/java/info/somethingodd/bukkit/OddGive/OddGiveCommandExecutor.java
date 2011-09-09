@@ -63,7 +63,7 @@ public class OddGiveCommandExecutor implements CommandExecutor {
             try {
                 ItemStack y = OddItem.getItemStack(is, q);
                 boolean allowed;
-                if (oddGive.mode.equals("whitelist")) {
+                if (!oddGive.blacklist) {
                     allowed = false;
                     for (ItemStack z : list)
                         if (OddItem.compare(y, z)) allowed = true;

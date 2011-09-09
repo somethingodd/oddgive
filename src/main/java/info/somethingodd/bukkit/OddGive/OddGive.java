@@ -31,8 +31,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,68 +45,82 @@ import java.util.logging.Logger;
  */
 public class OddGive extends JavaPlugin {
     protected Map<Player, Set<ItemStack>> lists = null;
-    protected Map<Integer, OddItemGroup> groups = null;
+    protected List<OddItemGroup> groups = null;
     protected String logPrefix = null;
-    protected String mode = null;
     protected Integer defaultQuantity = null;
-    protected static Logger log = null;
+    protected Logger log = null;
+    protected Boolean blacklist = null;
+    private Boolean permission = null;
     private PermissionHandler ph = null;
     private PluginDescriptionFile info = null;
     private OddGiveCommandExecutor OGCE = null;
     private OddGivePlayerListener OGPL = null;
     private String configurationFile = null;
-    private static String permission = null;
 
     private void configure() {
         File configFile = new File(configurationFile);
         if (!configFile.exists())
             writeConfig();
         Configuration config = new Configuration(configFile);
+        blacklist = config.getBoolean("blacklist", true);
         defaultQuantity = config.getInt("defaultQuantity", 64);
-        mode = config.getString("mode", "blacklist");
-        groups = new HashMap<Integer, OddItemGroup>();
-        List<String> groupsList = config.getKeys("groups");
+        groups = new LinkedList<OddItemGroup>();
+        List<String> groupsList = config.getStringList("groups", new ArrayList<String>());
         if (groupsList == null || groupsList.isEmpty()) {
-            log.warning(logPrefix + "No groups specified - item creation is unrestricted");
+            log.warning(logPrefix + "No groups available; blacklist disabled.");
         } else {
             for (String n : groupsList) {
-                groups.put(config.getInt(n, groups.size()), OddItem.getItemGroup(n));
+                OddItemGroup adding = OddItem.getItemGroup(n);
+                int i = 0;
+                while (i < groups.size() && groups.get(i).getData().getInt("priority", -1) < adding.getData().getInt("priority", -1))
+                    i++;
+                groups.add(i, adding);
             }
         }
-        permission = config.getString("permission", "bukkit");
+        permission = config.getBoolean("bukkitpermissions", true);
     }
 
     protected void calculate(Player player) {
         if (lists == null) lists = new HashMap<Player, Set<ItemStack>>();
         Set<ItemStack> list = new HashSet<ItemStack>();
-        for (int i = 1; i <= groups.size() && player.hasPermission("oddgive.groups."+i); i++) {
-            if (mode.equals("blacklist"))
-                for (ItemStack x : groups.get(i)) {
-                    boolean add = true;
-                    boolean remove = false;
-                    boolean blacklist = groups.get(i).getData().getBoolean("blacklist", true);
-                    for (ItemStack y : list)
-                        if (OddItem.compare(x, y)) {
-                            if (blacklist) add = false;
-                            else remove = true;
-                        }
-                    if (add) list.add(x);
-                    if (remove) list.remove(x);
-                }
+
+        for (int i = groups.size() - 1; i >= 0 && player.hasPermission("oddgive.groups." + i); i++) {
+            OddItemGroup group = groups.get(i);
+            boolean type = group.getData().getBoolean("blacklist", blacklist);
+            for (ItemStack x : group) {
+                for (ItemStack y : list)
+                    if (OddItem.compare(x, y)) {
+                        if (type) {
+                            if (blacklist) list.add(x);
+                        } else list.remove(x);
+                    }
+            }
         }
         lists.put(player, list);
     }
 
     @Override
     public void onDisable() {
+        log.info(logPrefix + "disabled");
         OGCE = null;
         OGPL = null;
+        groups = null;
         lists = null;
-        log.info(logPrefix + "disabled");
+        permission = null;
+        blacklist = null;
+        info = null;
+        log = null;
+        logPrefix = null;
+        ph = null;
+        defaultQuantity = null;
     }
 
     @Override
     public void onEnable() {
+        info = getDescription();
+        log = getServer().getLogger();
+        logPrefix = "[" + info.getName() + "] ";
+        configure();
         for (Player player : getServer().getOnlinePlayers()) {
             calculate(player);
         }
@@ -118,21 +134,16 @@ public class OddGive extends JavaPlugin {
         getServer().getPluginManager().registerEvent(Event.Type.PLAYER_LOGIN, OGPL, Event.Priority.Normal, this);
         getServer().getPluginManager().registerEvent(Event.Type.PLAYER_QUIT, OGPL, Event.Priority.Normal, this);
         Plugin p;
-        if (permission.equals("yeti")) {
+        if (!permission) {
             p = getServer().getPluginManager().getPlugin("Permissions");
-            if (p != null)
+            if (p != null) {
                 ph = ((Permissions) p).getHandler();
-            else
-                log.warning("Permissions selected in config, but plugin not found");
+            } else {
+                log.warning("Nijikokun/TheYeti/rcjrrjcr Permissions selected in config, but plugin not found");
+                permission = !permission;
+            }
         }
         log.info(logPrefix + info.getVersion() + " enabled");
-    }
-
-    @Override
-    public void onLoad() {
-        info = getDescription();
-        log = getServer().getLogger();
-        logPrefix = "[" + info.getName() + "] ";
     }
 
     private void writeConfig() {

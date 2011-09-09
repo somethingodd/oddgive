@@ -1,11 +1,9 @@
 defaultQuantity: 64
-mode: blacklist
+# List mode
+# If true, then blacklist any loaded groups not explicitly specified as 'whitelist', and whitelist all items by default
+# If false, then whitelist any loaded groups not explicitly specified as 'blacklist', and blacklist all items by default
+blacklist: true
+# Groups to load from OddItem
 groups:
-    name: oddgive.guest
-    priority: 1
-    name: oddgive.member
-    priority: 2
-    name: oddgive.vip
-    priority: 3
-    name: oddgive.admin
-    priority: 4
+    - member
+    - vip
