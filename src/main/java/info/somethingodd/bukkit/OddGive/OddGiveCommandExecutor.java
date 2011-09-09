@@ -59,6 +59,8 @@ public class OddGiveCommandExecutor implements CommandExecutor {
                 i++;
             } catch (NumberFormatException e) {
                 q = oddGive.defaultQuantity;
+            } catch (ArrayIndexOutOfBoundsException e) {
+                q = oddGive.defaultQuantity;
             }
             try {
                 ItemStack y = OddItem.getItemStack(is, q);
@@ -111,6 +113,8 @@ public class OddGiveCommandExecutor implements CommandExecutor {
                 i++;
             } catch (NumberFormatException e) {
                 q = -1;
+            } catch (ArrayIndexOutOfBoundsException e) {
+                q = oddGive.defaultQuantity;
             }
             try {
                 ItemStack y = OddItem.getItemStack(is, q);

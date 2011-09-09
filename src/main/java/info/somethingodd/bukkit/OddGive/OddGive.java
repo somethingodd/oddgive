@@ -17,6 +17,7 @@ import com.nijiko.permissions.PermissionHandler;
 import com.nijikokun.bukkit.Permissions.Permissions;
 import info.somethingodd.bukkit.OddItem.OddItem;
 import info.somethingodd.bukkit.OddItem.OddItemGroup;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
@@ -31,6 +32,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,7 +69,7 @@ public class OddGive extends JavaPlugin {
         defaultQuantity = config.getInt("defaultQuantity", 64);
         groups = new LinkedList<OddItemGroup>();
         List<String> groupsList = config.getStringList("groups", new ArrayList<String>());
-        if (groupsList == null || groupsList.isEmpty()) {
+        if (groupsList.isEmpty()) {
             log.warning(logPrefix + "No groups available; blacklist disabled.");
         } else {
             for (String n : groupsList) {
@@ -78,6 +81,7 @@ public class OddGive extends JavaPlugin {
             }
         }
         permission = config.getBoolean("bukkitpermissions", true);
+        if (config.getBoolean("phonehome", true)) phoneHome();
     }
 
     protected void calculate(Player player) {
@@ -120,11 +124,12 @@ public class OddGive extends JavaPlugin {
         info = getDescription();
         log = getServer().getLogger();
         logPrefix = "[" + info.getName() + "] ";
+        log.info(logPrefix + info.getVersion() + " enabled");
+        configurationFile = getDataFolder() + System.getProperty("file.separator") + "OddGive.yml";
         configure();
         for (Player player : getServer().getOnlinePlayers()) {
             calculate(player);
         }
-        configurationFile = getDataFolder() + System.getProperty("file.separator") + "OddGive.yml";
         OGCE = new OddGiveCommandExecutor(this);
         OGPL = new OddGivePlayerListener(this);
         getCommand("give").setExecutor(OGCE);
@@ -143,17 +148,21 @@ public class OddGive extends JavaPlugin {
                 permission = !permission;
             }
         }
-        log.info(logPrefix + info.getVersion() + " enabled");
     }
 
-    private void writeConfig() {
+    private boolean writeConfig() {
         FileWriter fw;
         try {
+            getDataFolder().mkdir();
             fw = new FileWriter(configurationFile);
+        } catch (SecurityException e) {
+            log.severe(logPrefix + "Couldn't create config dir: " + e.getMessage());
+            Bukkit.getPluginManager().disablePlugin(this);
+            return false;
         } catch (IOException e) {
             log.severe(logPrefix + "Couldn't write config file: " + e.getMessage());
-            getServer().getPluginManager().disablePlugin(this);
-            return;
+            Bukkit.getPluginManager().disablePlugin(this);
+            return false;
         }
         BufferedReader i = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/OddGive.yml")));
         BufferedWriter o = new BufferedWriter(fw);
@@ -172,14 +181,29 @@ public class OddGive extends JavaPlugin {
                 i.close();
             } catch (IOException e) {
                 log.severe(logPrefix + "Error saving config: " + e.getMessage());
-                getServer().getPluginManager().disablePlugin(this);
+                Bukkit.getPluginManager().disablePlugin(this);
             }
         }
+        return true;
     }
 
     protected boolean uglyPermissions(Player player, String permission) {
         if (ph != null)
             return ph.has(player, permission);
         return player.hasPermission(permission);
+    }
+
+    private void phoneHome() {
+        String url = String.format("http://plugins.blockface.org/usage/update.php?name=%s&build=%s&plugin=%s&port=%s",
+                getServer().getName(),
+                getDescription().getVersion(),
+                getDescription().getName(),
+                getServer().getPort());
+        try {
+            URL blockface = new URL(url);
+            URLConnection con = blockface.openConnection();
+        } catch (Exception e) {
+            return;
+        }
     }
 }
