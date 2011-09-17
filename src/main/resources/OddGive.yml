@@ -5,5 +5,4 @@ defaultQuantity: 64
 blacklist: true
 # Groups to load from OddItem
 groups:
-    - member
-    - vip
+- oddtransport

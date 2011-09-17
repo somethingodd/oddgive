@@ -3,7 +3,7 @@ main: info.somethingodd.bukkit.OddGive.OddGive
 version: 0.9
 website: http://bukkit.somethingodd.info
 author: petteyg359
-depend: [OddItem]
+depend: ['OddItem']
 description: >
              Item giving stuff.
 commands:

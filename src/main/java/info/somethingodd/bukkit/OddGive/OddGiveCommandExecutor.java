@@ -7,7 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,118 +23,71 @@ public class OddGiveCommandExecutor implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         Player player = (sender instanceof Player ? (Player) sender : null);
         if (player == null && label.equals("i")) {
-            sender.sendMessage(oddGive.logPrefix + "Perhaps you meant to use /give?");
+            sender.sendMessage(oddGive.logPrefix + "Try /give");
             return true;
         }
-        if (player != null && !player.isOp() && !oddGive.uglyPermissions(player, "oddgive." + label)) {
+        if (player != null && !player.isOp() && player.hasPermission("oddgive." + label)) {
             sender.sendMessage(oddGive.logPrefix + "You are not worthy.");
             return true;
         }
         if (label.equals("i") || label.equals("give")) {
-            give(player, args);
+            give(label, player, args);
+            return true;
         }
         if (label.equals("i0")) {
             take(player, args);
+            return true;
         }
-
         return false;
     }
 
-    private void give(Player player, String[] args) {
+    private Set<ItemStack> getItemStacks(String[] args) {
+        Set<ItemStack> itemStacks = new HashSet<ItemStack>();
+        ItemStack itemStack;
+        Integer quantity = oddGive.defaultQuantity;
+        for (int i = 0; i < args.length; i++) {
+            try {
+                itemStack = OddItem.getItemStack(args[i]);
+                quantity = Integer.parseInt(args[i + 1]);
+                itemStack.setAmount(quantity);
+                itemStacks.add(itemStack);
+            } catch (Exception e) {
+            }
+        }
+        return itemStacks;
+    }
+
+    private Set<Player> getPlayers(String[] args) {
         Set<Player> players = new HashSet<Player>();
-        Set<ItemStack> items = new HashSet<ItemStack>();
-        Set<ItemStack> list = (oddGive.lists.get(player) != null ? oddGive.lists.get(player) : new HashSet<ItemStack>());
-        int i = 0;
-        for (; i < args.length; i++) {
-            Player p = oddGive.getServer().getPlayer(args[i]);
-            if (p != null) {
-                players.add(p);
-            } else break;
+        for (int i = 0; i < args.length; i++) {
+            Player player = oddGive.getServer().getPlayer(args[i]);
+            if (player != null)
+                players.add(player);
+            else
+                break;
         }
-        for (; i < args.length; i++) {
-            int q = 0;
-            String is = args[i];
-            try {
-                q = Integer.valueOf(args[i+1]);
-                i++;
-            } catch (NumberFormatException e) {
-                q = oddGive.defaultQuantity;
-            } catch (ArrayIndexOutOfBoundsException e) {
-                q = oddGive.defaultQuantity;
-            }
-            try {
-                ItemStack y = OddItem.getItemStack(is, q);
-                boolean allowed;
-                if (!oddGive.blacklist) {
-                    allowed = false;
-                    for (ItemStack z : list)
-                        if (OddItem.compare(y, z)) allowed = true;
-                } else {
-                    allowed = true;
-                    for (ItemStack z : list)
-                        if (OddItem.compare(y, z)) allowed = false;
+        return players;
+    }
+
+    private void give(String label, Player player, String[] args) {
+        Set<Player> players = new HashSet<Player>();
+        Set<ItemStack> itemStacks = new HashSet<ItemStack>();
+        if (label.equals("give"))
+            players = getPlayers(args);
+        itemStacks = getItemStacks(Arrays.copyOfRange(args, players.size(), args.length));
+        for (ItemStack x : itemStacks) {
+            boolean remove = false;
+            for (ItemStack y : oddGive.lists.get(player)) {
+                if (OddItem.compare(x, y)) {
+                    if (oddGive.blacklist) remove = true;
+                    else remove = false;
                 }
-                if (allowed) items.add(y);
-                else player.sendMessage(oddGive.logPrefix + "Not allowed: " + is);
-            } catch (IllegalArgumentException e) {
-                player.sendMessage(oddGive.logPrefix + "Unknown: \"" + is + "\"   Did you mean \"" + e.getMessage() + "\"?");
             }
+            if (remove) itemStacks.remove(x);
         }
-        for (Player w : players)
-            for (ItemStack x : items)
-                w.getInventory().addItem(x);
     }
 
     private void take(Player player, String[] args) {
-        Set<Player> players = new HashSet<Player>();
-        Set<ItemStack> items = new HashSet<ItemStack>();
-        int i = 0;
-        for (; i < args.length; i++) {
-            Player p = oddGive.getServer().getPlayer(args[i]);
-            if (p != null) {
-                players.add(p);
-            } else break;
-        }
-        if (!player.isEmpty() && !oddGive.uglyPermissions(player, "oddgive.i0.other")) {
-            player.sendMessage(oddGive.logPrefix + "Not allowed");
-            return;
-        }
-        for (; i < args.length; i++) {
-            Player p = oddGive.getServer().getPlayer(args[i]);
-            if (p != null) {
-                players.add(p);
-            } else break;
-        }
-        for (; i < args.length; i++) {
-            int q = 0;
-            String is = args[i];
-            try {
-                q = Integer.valueOf(args[i + 1]);
-                i++;
-            } catch (NumberFormatException e) {
-                q = -1;
-            } catch (ArrayIndexOutOfBoundsException e) {
-                q = oddGive.defaultQuantity;
-            }
-            try {
-                ItemStack y = OddItem.getItemStack(is, q);
-                items.add(y);
-            } catch (IllegalArgumentException e) {
-                player.sendMessage(oddGive.logPrefix + "Unknown: \"" + is + "\"   Did you mean \"" + e.getMessage() + "\"?");
-            }
-        }
-        for (Player w : players)
-            for (ItemStack x : items) {
-                if (x.getAmount() == -1) {
-                    for (ItemStack v : w.getInventory().getContents()) {
-                        if (OddItem.compare(x, v)) w.getInventory().remove(v);
-                    }
-                } else {
-                    HashMap<Integer, ItemStack> v = w.getInventory().removeItem(x);
-                    if (!v.isEmpty()) {
-                        player.sendMessage(oddGive.logPrefix + "Could not remove" + (x.getAmount() - v.keySet().iterator().next()) + " of " + x.getTypeId() + ";" + x.getDurability() + " from " + w.getName() + ".");
-                    }
-                }
-            }
+
     }
 }
