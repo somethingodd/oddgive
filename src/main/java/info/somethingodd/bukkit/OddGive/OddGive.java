@@ -68,12 +68,16 @@ public class OddGive extends JavaPlugin {
             log.warning(logPrefix + "No groups available; blacklist disabled.");
         } else {
             for (String g : groups) {
-                OddItemGroup group = OddItem.getItemGroup(g);
-                if (group.getData().getProperty("oddgive") != null) {
-                    int i = 0;
-                    while (i < groups.size() && this.groups.get(i).getData().getInt("oddgive.priority", -1) < group.getData().getInt("oddgive.priority", -1))
-                        i++;
-                    this.groups.add(i, group);
+                try {
+                    OddItemGroup group = OddItem.getItemGroup(g);
+                    if (group.getData().getProperty("oddgive") != null) {
+                        int i = 0;
+                        while (i < groups.size() && this.groups.get(i).getData().getInt("oddgive.priority", -1) < group.getData().getInt("oddgive.priority", -1))
+                            i++;
+                        this.groups.add(i, group);
+                    }
+                } catch (IllegalArgumentException e) {
+                    log.warning(logPrefix + "Group \"" + g + "\" is undefined...");
                 }
             }
         }
