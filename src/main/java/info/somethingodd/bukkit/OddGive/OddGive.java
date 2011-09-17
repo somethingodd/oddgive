@@ -15,7 +15,6 @@ package info.somethingodd.bukkit.OddGive;
 
 import info.somethingodd.bukkit.OddItem.OddItem;
 import info.somethingodd.bukkit.OddItem.OddItemGroup;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
@@ -169,7 +168,7 @@ public class OddGive extends JavaPlugin {
                 i.close();
             } catch (IOException e) {
                 log.severe(logPrefix + "Error saving config: " + e.getMessage());
-                Bukkit.getPluginManager().disablePlugin(Bukkit.getPluginManager().getPlugin("OddItem"));
+                getServer().getPluginManager().disablePlugin(getServer().getPluginManager().getPlugin("OddGive"));
             }
         }
         return true;
