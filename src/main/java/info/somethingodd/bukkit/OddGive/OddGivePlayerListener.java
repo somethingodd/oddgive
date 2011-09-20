@@ -19,9 +19,10 @@ public class OddGivePlayerListener extends PlayerListener {
         ItemStack itemStack = null;
         try {
             itemStack = OddItem.getItemStack(event.getPlayer().getName());
-        } catch (IllegalArgumentException e) {}
+        } catch (IllegalArgumentException e) {
+        }
         if (itemStack != null)
-            oddGive.log.warning("Joining player name matches an OddItem alias! This may be confusing.");
+            oddGive.log.warning("Joining player name matches an OddItemBase alias! This may be confusing.");
     }
 
     @Override

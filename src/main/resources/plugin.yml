@@ -8,22 +8,43 @@ description: >
              Item giving stuff.
 commands:
   i:
+    permission: oddgive.i
     usage: |
-           /<command> item quantity
-           Example: /<command> dirt 5 - Gives you 5 dirt.
-           Example: /<command> cobblestone - Gives you a stack of (64) cobblestone.
+           /<command> <item [quantity] [item [quantity]]...>
+           Gives you item(s)
   give:
+    aliases: g
+    permission: oddgive.give
     usage: |
-           /<command> player item quantity
-           Example: /<command> Jimbo dirt 5 - Gives Jimbo 5 dirt.
-           Example: /<command> Jill cobblestone - Gives Jill a stack of (64) cobblestone.
+           /<command> <player [player]...> <item [quantity] [item [quantity]]...>
+           Give player(s) item(s)
   i0:
+    aliases: ['0',take]
+    permission: oddgive.i0
     usage: |
-           /<command> [player]
-           Example: /<command> - clears your inventory
-           Example: /<command> Jimbo - clears Jimbo's inventory
+           /<command> [player]... [item [quantity]]...
+           Clears inventory [of player(s)] [of item(s)]
   oddgive:
     aliases: og
+    permission: oddgive.oddgive
     usage: |
-           /<command> list - prints items in blacklist/whitelist
-
+           /<command> list <b|w> - prints items in blacklist or whitelist (not yet implemented)
+permissions:
+  oddgive:
+    children:
+      oggive.give: true
+      oddgive.i: true
+      oddgive.i0: true
+      oddgive.i0.other: false
+      oddgive.oddgive: true
+    default: true
+  oddgive.give:
+    default: op
+  oddgive.i:
+    default: op
+  oddgive.i0:
+    default: true
+  oddgive.i0.other:
+    default: op
+  oddgive.oddgive:
+    default: op

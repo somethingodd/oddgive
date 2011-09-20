@@ -72,9 +72,10 @@ public class OddGive extends JavaPlugin {
                     OddItemGroup group = OddItem.getItemGroup(g);
                     if (group.getData().getProperty("oddgive") != null) {
                         int i = 0;
-                        while (i < groups.size() && this.groups.get(i).getData().getInt("oddgive.priority", -1) < group.getData().getInt("oddgive.priority", -1))
+                        while (i < groups.size() - 1 && this.groups.get(i).getData().getInt("oddgive.priority", -1) < group.getData().getInt("oddgive.priority", -1))
                             i++;
                         this.groups.add(i, group);
+
                     }
                 } catch (IllegalArgumentException e) {
                     log.warning(logPrefix + "Group \"" + g + "\" is undefined...");
@@ -96,13 +97,20 @@ public class OddGive extends JavaPlugin {
             else if (group.getData().getStringList("oddgive.type", new ArrayList<String>()).contains("whitelist"))
                 type = false;
             if (type != null) {
-                for (ItemStack x : group) {
-                    for (ItemStack y : list)
-                        if (OddItem.compare(x, y)) {
-                            if (type) {
-                                if (blacklist) list.add(x);
-                            } else list.remove(x);
+                for (ItemStack groupItem : group) {
+                    boolean found = false;
+                    for (ItemStack listItem : list) {
+                        if (OddItem.compare(groupItem, listItem)) {
+                            if (!type.equals(blacklist)) { // If list type is opposite of operation mode, then item should be removed from list.
+                                found = true;
+                                list.remove(listItem);
+                            }
                         }
+                    }
+                    if (!found && type.equals(blacklist)) { // Only need to add items if list type is same as operation mode, and item wasn't checked already
+                        groupItem.setAmount(0);
+                        list.add(groupItem);
+                    }
                 }
             }
         }
