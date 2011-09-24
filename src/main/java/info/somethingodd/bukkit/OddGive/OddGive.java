@@ -30,19 +30,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 
 /**
  * @author Gordon Pettey (petteyg359@gmail.com)
  */
 public class OddGive extends JavaPlugin {
-    protected Map<Player, Set<ItemStack>> lists = null;
+    protected Map<Player, OddItemGroup> lists = null;
     protected List<OddItemGroup> groups = null;
+    protected Map<String, OddItemGroup> kits = null;
     protected String logPrefix = null;
     protected Integer defaultQuantity = null;
     protected Logger log = null;
@@ -60,61 +58,58 @@ public class OddGive extends JavaPlugin {
         config.load();
         blacklist = config.getBoolean("blacklist", true);
         defaultQuantity = config.getInt("defaultQuantity", 64);
-        groups = new LinkedList<OddItemGroup>();
-        log.info(logPrefix + "configKeys: " + config.getKeys());
-        List<String> groups = config.getStringList("groups", new ArrayList<String>());
-        log.info(logPrefix + "groups: " + groups.toString());
-        if (groups.isEmpty()) {
-            log.warning(logPrefix + "No groups available; blacklist disabled.");
-        } else {
-            for (String g : groups) {
-                try {
-                    OddItemGroup group = OddItem.getItemGroup(g);
-                    if (group.getData().getProperty("oddgive") != null) {
-                        int i = 0;
-                        while (i < groups.size() - 1 && this.groups.get(i).getData().getInt("oddgive.priority", -1) < group.getData().getInt("oddgive.priority", -1))
-                            i++;
-                        this.groups.add(i, group);
-
-                    }
-                } catch (IllegalArgumentException e) {
-                    log.warning(logPrefix + "Group \"" + g + "\" is undefined...");
-                }
+        for (String groupName : OddItem.getGroups()) {
+            OddItemGroup oddItemGroup = OddItem.getItemGroup(groupName);
+            List<String> oddgiveType = oddItemGroup.getData().getStringList("oddgive.type", new ArrayList<String>());
+            if (oddgiveType.isEmpty()) continue;
+            oddItemGroup.setName(groupName);
+            if (oddgiveType.contains("kit")) {
+                if (kits == null) kits = new HashMap<String, OddItemGroup>();
+                kits.put(oddItemGroup.getName(), oddItemGroup);
+                log.info(logPrefix + "Added kit \"" + groupName + "\"");
+            } else if (oddgiveType.contains("blacklist") || oddgiveType.contains("whitelist")) {
+                log.info(logPrefix + "Added " + (oddgiveType.contains("blacklist") ? "black" : "white") + "list \"" + groupName + "\"");
+                list(oddItemGroup);
             }
         }
-        //configuration.setHeader("See https://github.com/petteyg/OddGive/blob/master/src/main/resources/OddGive.yml for a commented example");
         config.save();
     }
 
+    protected void list(OddItemGroup oddItemGroup) {
+        if (groups == null) groups = new ArrayList<OddItemGroup>();
+        int i = 0;
+        while (i < groups.size()) {
+            if (groups.get(i).getData().getInt("oddgive.priority", 0) >= oddItemGroup.getData().getInt("oddgive.priority", 0)) break;
+            i++;
+        }
+        groups.add(i, oddItemGroup);
+    }
+
     protected void calculate(Player player) {
-        if (lists == null) lists = new HashMap<Player, Set<ItemStack>>();
-        Set<ItemStack> list = new HashSet<ItemStack>();
-        for (int i = groups.size() - 1; i >= 0 && player.hasPermission("oddgive.groups." + i); i++) {
-            OddItemGroup group = groups.get(i);
-            Boolean type = null;
-            if (group.getData().getStringList("oddgive.type", new ArrayList<String>()).contains("blacklist"))
-                type = true;
-            else if (group.getData().getStringList("oddgive.type", new ArrayList<String>()).contains("whitelist"))
-                type = false;
-            if (type != null) {
-                for (ItemStack groupItem : group) {
-                    boolean found = false;
-                    for (ItemStack listItem : list) {
-                        if (OddItem.compare(groupItem, listItem)) {
-                            if (!type.equals(blacklist)) { // If list type is opposite of operation mode, then item should be removed from list.
-                                found = true;
-                                list.remove(listItem);
-                            }
-                        }
-                    }
-                    if (!found && type.equals(blacklist)) { // Only need to add items if list type is same as operation mode, and item wasn't checked already
-                        groupItem.setAmount(0);
-                        list.add(groupItem);
-                    }
+        if (lists == null) lists = new HashMap<Player, OddItemGroup>();
+        OddItemGroup oddItemGroup = new OddItemGroup();
+        for (int i = groups.size() - 1; i >= 0; i--) {
+            log.info(logPrefix + "Loading group " + groups.get(i).getName() + "for player " + player.getName());
+            OddItemGroup currentGroup = groups.get(i);
+            log.info(logPrefix + currentGroup.toString());
+            List<String> types = currentGroup.getData().getStringList("oddgive.type", new ArrayList<String>());
+            boolean blacklist = true;
+            if (types.contains("blacklist")) {
+                blacklist = true;
+            } else if (types.contains("whitelist")) {
+                blacklist = false;
+            }
+            for (ItemStack itemStack : currentGroup) {
+                if (oddItemGroup.contains(itemStack) && this.blacklist && !blacklist) {
+                    oddItemGroup.remove(itemStack);
+                } else if (!oddItemGroup.contains(itemStack) && this.blacklist && blacklist) {
+                    oddItemGroup.add(itemStack);
                 }
             }
         }
-        lists.put(player, list);
+        lists.put(player, oddItemGroup);
+        log.info(logPrefix + "List for " + player.getName() + ":");
+        log.info(logPrefix + oddItemGroup.toString());
     }
 
     @Override
@@ -129,6 +124,7 @@ public class OddGive extends JavaPlugin {
         log = null;
         logPrefix = null;
         defaultQuantity = null;
+        kits = null;
     }
 
     @Override

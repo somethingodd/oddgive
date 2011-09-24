@@ -32,13 +32,17 @@ commands:
 permissions:
   oddgive:
     children:
-      oggive.give: true
+      oddgive.give: true
+      oddgive.give.bypass: false
       oddgive.i: true
       oddgive.i0: true
       oddgive.i0.other: false
+      oddgive.list: true
       oddgive.oddgive: true
     default: true
   oddgive.give:
+    default: op
+  oddgive.give.bypass:
     default: op
   oddgive.i:
     default: op
@@ -46,5 +50,7 @@ permissions:
     default: true
   oddgive.i0.other:
     default: op
+  oddgive.list:
+    default: true
   oddgive.oddgive:
     default: op

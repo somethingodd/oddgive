@@ -1,6 +1,7 @@
 package info.somethingodd.bukkit.OddGive;
 
 import info.somethingodd.bukkit.OddItem.OddItem;
+import info.somethingodd.bukkit.OddItem.OddItemGroup;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -20,14 +21,16 @@ public class OddGiveCommandExecutor implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        Player player = (sender instanceof Player ? (Player) sender : null);
-        if (player == null && label.equals("i")) {
+        if (!(sender instanceof Player) && label.equals("i")) {
             sender.sendMessage(oddGive.logPrefix + "Try /give");
             return true;
         }
-        if (player != null && !player.isOp() && player.hasPermission("oddgive." + label)) {
-            sender.sendMessage(oddGive.logPrefix + "You are not worthy.");
-            return true;
+        if (sender instanceof Player) {
+            oddGive.calculate((Player) sender);
+            if (!sender.isOp() && ((!command.getName().equals("oddgive") && !sender.hasPermission("oddgive." + label)) || (command.getName().equals("oddgive") && !sender.hasPermission("oddgive." + args[0])))) {
+                sender.sendMessage(oddGive.logPrefix + "You are not worthy.");
+                return true;
+            }
         }
         if (label.equals("give")) {
             return give(sender, args);
@@ -35,6 +38,12 @@ public class OddGiveCommandExecutor implements CommandExecutor {
             return i(sender, args);
         } else if (label.equals("i0")) {
             return i0(sender, args);
+        }
+        if (args.length == 1) {
+            if (args[0].equals("list")) {
+                sender.sendMessage(oddGive.logPrefix + "You are " + (oddGive.blacklist ? "dis" : "") + "allowed these items: " + oddGive.lists.get(sender).toString());
+                return true;
+            }
         }
         return false;
     }
@@ -50,45 +59,9 @@ public class OddGiveCommandExecutor implements CommandExecutor {
         }
         for (; i < args.length; i++) {
             try {
-                ItemStack item = OddItem.getItemStack(args[i]);
-                int amount = oddGive.defaultQuantity;
-                try {
-                    amount = Integer.parseInt(args[i+1]);
-                    i++;
-                } catch (Exception e) {
-                }
-                item.setAmount(amount);
-                items.add(item);
-            } catch (IllegalArgumentException e) {
-                sender.sendMessage(oddGive.logPrefix + "Unknown item \"" + args[i] + "\" - did you mean \"" + e.getMessage() + "\"?");
-            }
-        }
-        for (ItemStack itemStack : items) {
-            for (Player player : players) {
-                boolean deny = false;
-                for (ItemStack listItem : oddGive.lists.get(player)) {
-                    if (OddItem.compare(listItem, itemStack)) {
-                        deny = true;
-                        break;
-                    }
-                }
-                if (deny) {
-                    sender.sendMessage(oddGive.logPrefix + "Item not allowed.");
-                    continue;
-                }
-                player.getInventory().addItem(itemStack);
-            }
-        }
-        return true;
-    }
-
-    private boolean i(CommandSender sender, String[] args) {
-        HashSet<ItemStack> items = new HashSet<ItemStack>();
-        for (int i = 0; i < args.length; i++) {
-            try {
                 ItemStack itemStack = OddItem.getItemStack(args[i]);
                 boolean deny = false;
-                for (ItemStack listItem : oddGive.lists.get((Player) sender)) {
+                for (ItemStack listItem : oddGive.lists.get(sender)) {
                     if (OddItem.compare(listItem, itemStack)) deny = true;
                 }
                 if (deny) {
@@ -104,7 +77,85 @@ public class OddGiveCommandExecutor implements CommandExecutor {
                 itemStack.setAmount(amount);
                 items.add(itemStack);
             } catch (IllegalArgumentException e) {
-                sender.sendMessage(oddGive.logPrefix + "Unknown item \"" + args[i] + "\" - did you mean \"" + e.getMessage() + "\"?");
+                if (oddGive.kits.get(args[i]) == null) {
+                    sender.sendMessage(oddGive.logPrefix + "Unknown item \"" + args[i] + "\" - did you mean \"" + e.getMessage() + "\"?");
+                } else {
+                    OddItemGroup kit = oddGive.kits.get(args[i]);
+                    for (ItemStack itemStack : kit) {
+                        boolean deny = false;
+                        for (ItemStack listItem : oddGive.lists.get(sender)) {
+                            if (OddItem.compare(listItem, itemStack)) deny = true;
+                        }
+                        if (deny) {
+                            sender.sendMessage(oddGive.logPrefix + "Not allowed: " + args[i]);
+                            continue;
+                        } else {
+                            items.add(itemStack);
+                        }
+                    }
+                }
+            }
+        }
+        for (ItemStack itemStack : items) {
+            for (Player player : players) {
+                boolean deny = false;
+                for (ItemStack listItem : oddGive.lists.get(player)) {
+                    if (!sender.hasPermission("oddgive.give.bypass") && OddItem.compare(listItem, itemStack)) {
+                        deny = true;
+                    }
+                }
+                if (deny) {
+                    sender.sendMessage(oddGive.logPrefix + "Not allowed: " + OddItem.getAliases(itemStack.getTypeId() + ";" + itemStack.getDurability()).get(0));
+                    continue;
+                }
+                player.getInventory().addItem(itemStack);
+            }
+        }
+        return true;
+    }
+
+    private boolean i(CommandSender sender, String[] args) {
+        HashSet<ItemStack> items = new HashSet<ItemStack>();
+        for (int i = 0; i < args.length; i++) {
+            try {
+                ItemStack itemStack = OddItem.getItemStack(args[i]);
+                boolean deny = false;
+                for (ItemStack listItem : oddGive.lists.get(sender)) {
+                    if (OddItem.compare(listItem, itemStack)) {
+                        deny = true;
+                        break;
+                    }
+                }
+                if (deny) {
+                    sender.sendMessage(oddGive.logPrefix + "Not allowed: " + args[i]);
+                    continue;
+                }
+                int amount = oddGive.defaultQuantity;
+                try {
+                    amount = Integer.parseInt(args[i+1]);
+                    i++;
+                } catch (Exception e) {
+                }
+                itemStack.setAmount(amount);
+                items.add(itemStack);
+            } catch (IllegalArgumentException e) {
+                if (oddGive.kits.get(args[i]) == null) {
+                    sender.sendMessage(oddGive.logPrefix + "Unknown item \"" + args[i] + "\" - did you mean \"" + e.getMessage() + "\"?");
+                } else {
+                    OddItemGroup kit = oddGive.kits.get(args[i]);
+                    for (ItemStack itemStack : kit) {
+                        boolean deny = false;
+                        for (ItemStack listItem : oddGive.lists.get(sender)) {
+                            if (OddItem.compare(listItem, itemStack)) deny = true;
+                        }
+                        if (deny) {
+                            sender.sendMessage(oddGive.logPrefix + "Not allowed: " + args[i]);
+                            continue;
+                        } else {
+                            items.add(itemStack);
+                        }
+                    }
+                }
             }
         }
         for (ItemStack itemStack : items) {

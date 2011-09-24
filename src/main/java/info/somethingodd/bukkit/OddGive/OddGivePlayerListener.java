@@ -16,13 +16,16 @@ public class OddGivePlayerListener extends PlayerListener {
     @Override
     public void onPlayerLogin(PlayerLoginEvent event) {
         oddGive.calculate(event.getPlayer());
-        ItemStack itemStack = null;
+        ItemStack itemStack;
         try {
             itemStack = OddItem.getItemStack(event.getPlayer().getName());
+            if (itemStack != null)
+                oddGive.log.warning("Joining player with name " + event.getPlayer().getName() + " matches an OddItem alias! This may be confusing.");
+            itemStack = OddItem.getItemStack(event.getPlayer().getDisplayName());
+            if (itemStack != null)
+                oddGive.log.warning("Joining player with displayname " + event.getPlayer().getDisplayName() + "matches an OddItem alias! This may be confusing.");
         } catch (IllegalArgumentException e) {
         }
-        if (itemStack != null)
-            oddGive.log.warning("Joining player name matches an OddItemBase alias! This may be confusing.");
     }
 
     @Override
