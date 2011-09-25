@@ -25,8 +25,8 @@ public class OddGiveCommandExecutor implements CommandExecutor {
             sender.sendMessage(oddGive.logPrefix + "Try /give");
             return true;
         }
+        if (!oddGive.lists.containsKey((Player) sender)) oddGive.log.info(oddGive.logPrefix + "wtf");
         if (sender instanceof Player) {
-            oddGive.calculate((Player) sender);
             if (!sender.isOp() && ((!command.getName().equals("oddgive") && !sender.hasPermission("oddgive." + label)) || (command.getName().equals("oddgive") && !sender.hasPermission("oddgive." + args[0])))) {
                 sender.sendMessage(oddGive.logPrefix + "You are not worthy.");
                 return true;

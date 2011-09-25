@@ -107,8 +107,6 @@ public class OddGive extends JavaPlugin {
             }
         }
         lists.put(player, oddItemGroup);
-        log.info(logPrefix + "List for " + player.getName() + ":");
-        log.info(logPrefix + oddItemGroup.toString());
     }
 
     @Override

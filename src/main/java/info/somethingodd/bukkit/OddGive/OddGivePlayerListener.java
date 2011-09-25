@@ -25,6 +25,7 @@ public class OddGivePlayerListener extends PlayerListener {
                 oddGive.log.warning("Joining player with displayname " + event.getPlayer().getDisplayName() + "matches an OddItem alias! This may be confusing.");
         } catch (IllegalArgumentException e) {
         }
+        oddGive.calculate(event.getPlayer());
     }
 
     @Override
