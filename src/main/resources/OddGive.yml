@@ -3,6 +3,4 @@ defaultQuantity: 64
 # If true, then blacklist any loaded groups not explicitly specified as 'whitelist', and whitelist all items by default
 # If false, then whitelist any loaded groups not explicitly specified as 'blacklist', and blacklist all items by default
 blacklist: true
-# Groups to load from OddItem
-groups:
-- oddtransport
+

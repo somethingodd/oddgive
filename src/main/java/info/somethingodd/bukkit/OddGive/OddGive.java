@@ -67,7 +67,8 @@ public class OddGive extends JavaPlugin {
                 if (kits == null) kits = new HashMap<String, OddItemGroup>();
                 kits.put(oddItemGroup.getName(), oddItemGroup);
                 log.info(logPrefix + "Added kit \"" + groupName + "\"");
-            } else if (oddgiveType.contains("blacklist") || oddgiveType.contains("whitelist")) {
+            }
+            if (oddgiveType.contains("blacklist") || oddgiveType.contains("whitelist")) {
                 log.info(logPrefix + "Added " + (oddgiveType.contains("blacklist") ? "black" : "white") + "list \"" + groupName + "\"");
                 list(oddItemGroup);
             }
@@ -89,9 +90,7 @@ public class OddGive extends JavaPlugin {
         if (lists == null) lists = new HashMap<Player, OddItemGroup>();
         OddItemGroup oddItemGroup = new OddItemGroup();
         for (int i = groups.size() - 1; i >= 0; i--) {
-            log.info(logPrefix + "Loading group " + groups.get(i).getName() + "for player " + player.getName());
             OddItemGroup currentGroup = groups.get(i);
-            log.info(logPrefix + currentGroup.toString());
             List<String> types = currentGroup.getData().getStringList("oddgive.type", new ArrayList<String>());
             boolean blacklist = true;
             if (types.contains("blacklist")) {

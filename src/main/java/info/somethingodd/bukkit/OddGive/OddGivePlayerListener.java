@@ -15,7 +15,6 @@ public class OddGivePlayerListener extends PlayerListener {
 
     @Override
     public void onPlayerLogin(PlayerLoginEvent event) {
-        oddGive.calculate(event.getPlayer());
         ItemStack itemStack;
         try {
             itemStack = OddItem.getItemStack(event.getPlayer().getName());
