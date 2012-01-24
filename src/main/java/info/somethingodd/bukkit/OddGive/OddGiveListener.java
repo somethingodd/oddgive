@@ -7,10 +7,10 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
-public class OddGivePlayerListener implements Listener {
+public class OddGiveListener implements Listener {
     private OddGive oddGive = null;
 
-    public OddGivePlayerListener(OddGive oddGive) {
+    public OddGiveListener(OddGive oddGive) {
         this.oddGive = oddGive;
     }
 

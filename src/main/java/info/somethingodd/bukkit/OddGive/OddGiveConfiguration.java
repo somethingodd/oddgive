@@ -47,6 +47,7 @@ public class OddGiveConfiguration {
             oddGive.log.severe("Couldn't open configuration file! " + e.getMessage());
             e.printStackTrace();
         }
-
+        oddGive.blacklist = configuration.getBoolean("blacklist");
+        oddGive.defaultQuantity = configuration.getInt("defaultQuantity");
     }
 }

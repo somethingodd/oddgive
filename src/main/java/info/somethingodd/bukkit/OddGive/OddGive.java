@@ -36,7 +36,7 @@ public class OddGive extends JavaPlugin {
     protected Logger log;
     protected Boolean blacklist;
     private OddGiveCommandExecutor OGCE;
-    private OddGivePlayerListener OGPL;
+    private OddGiveListener OGPL;
     private OddGiveConfiguration oddGiveConfiguration;
 
     protected void list(OddItemGroup oddItemGroup) {
@@ -96,7 +96,7 @@ public class OddGive extends JavaPlugin {
             calculate(player);
         }
         OGCE = new OddGiveCommandExecutor(this);
-        OGPL = new OddGivePlayerListener(this);
+        OGPL = new OddGiveListener(this);
         getCommand("give").setExecutor(OGCE);
         getCommand("i").setExecutor(OGCE);
         getCommand("i0").setExecutor(OGCE);

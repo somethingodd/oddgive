@@ -1,6 +1,7 @@
-defaultQuantity: 64
 # List mode
 # If true, then blacklist any loaded groups not explicitly specified as 'whitelist', and whitelist all items by default
 # If false, then whitelist any loaded groups not explicitly specified as 'blacklist', and blacklist all items by default
 blacklist: true
+defaultQuantity: 64
+
 
