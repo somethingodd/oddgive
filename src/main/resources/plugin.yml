@@ -1,6 +1,6 @@
 name: OddGive
 main: info.somethingodd.bukkit.OddGive.OddGive
-version: 0.9.0.3
+version: 0.9.1
 website: http://bukkit.somethingodd.info
 author: petteyg359
 depend: [OddItem]
@@ -28,7 +28,7 @@ commands:
     aliases: og
     permission: oddgive.oddgive
     usage: |
-           /<command> list <b|w> - prints items in blacklist or whitelist (not yet implemented)
+           /<command> shows GUI (not yet implemented)
 permissions:
   oddgive:
     children:

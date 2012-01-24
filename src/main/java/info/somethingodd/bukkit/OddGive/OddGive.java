@@ -13,21 +13,11 @@
  */
 package info.somethingodd.bukkit.OddGive;
 
-import info.somethingodd.bukkit.OddItem.OddItem;
 import info.somethingodd.bukkit.OddItem.OddItemGroup;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.config.Configuration;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,43 +28,16 @@ import java.util.logging.Logger;
  * @author Gordon Pettey (petteyg359@gmail.com)
  */
 public class OddGive extends JavaPlugin {
-    protected Map<Player, OddItemGroup> lists = null;
-    protected List<OddItemGroup> groups = null;
-    protected Map<String, OddItemGroup> kits = null;
-    protected String logPrefix = null;
-    protected Integer defaultQuantity = null;
-    protected Logger log = null;
-    protected Boolean blacklist = null;
-    private PluginDescriptionFile info = null;
-    private OddGiveCommandExecutor OGCE = null;
-    private OddGivePlayerListener OGPL = null;
-    private String configurationFile = null;
-
-    private void configure() {
-        File configFile = new File(configurationFile);
-        if (!configFile.exists())
-            if (!writeConfig()) return;
-        Configuration config = new Configuration(configFile);
-        config.load();
-        blacklist = config.getBoolean("blacklist", true);
-        defaultQuantity = config.getInt("defaultQuantity", 64);
-        for (String groupName : OddItem.getGroups()) {
-            OddItemGroup oddItemGroup = OddItem.getItemGroup(groupName);
-            List<String> oddgiveType = oddItemGroup.getData().getStringList("oddgive.type", new ArrayList<String>());
-            if (oddgiveType.isEmpty()) continue;
-            oddItemGroup.setName(groupName);
-            if (oddgiveType.contains("kit")) {
-                if (kits == null) kits = new HashMap<String, OddItemGroup>();
-                kits.put(oddItemGroup.getName(), oddItemGroup);
-                log.info(logPrefix + "Added kit \"" + groupName + "\"");
-            }
-            if (oddgiveType.contains("blacklist") || oddgiveType.contains("whitelist")) {
-                log.info(logPrefix + "Added " + (oddgiveType.contains("blacklist") ? "black" : "white") + "list \"" + groupName + "\"");
-                list(oddItemGroup);
-            }
-        }
-        config.save();
-    }
+    protected Map<Player, OddItemGroup> lists;
+    protected List<OddItemGroup> groups;
+    protected Map<String, OddItemGroup> kits;
+    protected String logPrefix;
+    protected Integer defaultQuantity;
+    protected Logger log;
+    protected Boolean blacklist;
+    private OddGiveCommandExecutor OGCE;
+    private OddGivePlayerListener OGPL;
+    private OddGiveConfiguration oddGiveConfiguration;
 
     protected void list(OddItemGroup oddItemGroup) {
         if (groups == null) groups = new ArrayList<OddItemGroup>();
@@ -91,7 +54,7 @@ public class OddGive extends JavaPlugin {
         OddItemGroup oddItemGroup = new OddItemGroup();
         for (int i = groups.size() - 1; i >= 0; i--) {
             OddItemGroup currentGroup = groups.get(i);
-            List<String> types = currentGroup.getData().getStringList("oddgive.type", new ArrayList<String>());
+            List<String> types = currentGroup.getData().getStringList("oddgive.type");
             boolean blacklist = true;
             if (types.contains("blacklist")) {
                 blacklist = true;
@@ -117,7 +80,6 @@ public class OddGive extends JavaPlugin {
         groups = null;
         lists = null;
         blacklist = null;
-        info = null;
         log = null;
         logPrefix = null;
         defaultQuantity = null;
@@ -126,12 +88,10 @@ public class OddGive extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        info = getDescription();
         log = getServer().getLogger();
-        logPrefix = "[" + info.getName() + "] ";
-        log.info(logPrefix + info.getVersion() + " enabled");
-        configurationFile = getDataFolder() + System.getProperty("file.separator") + "OddGive.yml";
-        configure();
+        logPrefix = "[" + getDescription().getName() + "] ";
+        log.info(logPrefix + getDescription().getVersion() + " enabled");
+        oddGiveConfiguration.configure();
         for (Player player : getServer().getOnlinePlayers()) {
             calculate(player);
         }
@@ -141,41 +101,6 @@ public class OddGive extends JavaPlugin {
         getCommand("i").setExecutor(OGCE);
         getCommand("i0").setExecutor(OGCE);
         getCommand("oddgive").setExecutor(OGCE);
-        getServer().getPluginManager().registerEvent(Event.Type.PLAYER_LOGIN, OGPL, Event.Priority.Normal, this);
-        getServer().getPluginManager().registerEvent(Event.Type.PLAYER_QUIT, OGPL, Event.Priority.Normal, this);
-    }
-
-    private boolean writeConfig() {
-        FileWriter fw;
-        File config = new File(configurationFile);
-        if (!config.getParentFile().exists()) config.getParentFile().mkdir();
-        try {
-            fw = new FileWriter(configurationFile);
-        } catch (IOException e) {
-            log.severe(logPrefix + "Couldn't write config file: " + e.getMessage());
-            getServer().getPluginManager().disablePlugin(this);
-            return false;
-        }
-        BufferedReader i = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/" + info.getName() + ".yml")));
-        BufferedWriter o = new BufferedWriter(fw);
-        try {
-            String line = i.readLine();
-            while (line != null) {
-                o.write(line + System.getProperty("line.separator"));
-                line = i.readLine();
-            }
-            log.info(logPrefix + "Wrote default config");
-        } catch (IOException e) {
-            log.severe(logPrefix + "Error writing config: " + e.getMessage());
-        } finally {
-            try {
-                o.close();
-                i.close();
-            } catch (IOException e) {
-                log.severe(logPrefix + "Error saving config: " + e.getMessage());
-                getServer().getPluginManager().disablePlugin(getServer().getPluginManager().getPlugin("OddGive"));
-            }
-        }
-        return true;
+        getServer().getPluginManager().registerEvents(OGPL, this);
     }
 }
