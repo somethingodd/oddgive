@@ -1,7 +1,6 @@
 package info.somethingodd.bukkit.OddGive;
 
 import info.somethingodd.bukkit.OddItem.OddItem;
-import info.somethingodd.bukkit.OddItem.OddItemGroup;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -25,7 +24,6 @@ public class OddGiveCommandExecutor implements CommandExecutor {
             sender.sendMessage(oddGive.logPrefix + "Try /give");
             return true;
         }
-        if (!oddGive.lists.containsKey((Player) sender)) oddGive.log.info(oddGive.logPrefix + "wtf");
         if (sender instanceof Player) {
             if (!sender.isOp() && ((!command.getName().equals("oddgive") && !sender.hasPermission("oddgive." + label)) || (command.getName().equals("oddgive") && !sender.hasPermission("oddgive." + args[0])))) {
                 sender.sendMessage(oddGive.logPrefix + "You are not worthy.");
@@ -41,7 +39,6 @@ public class OddGiveCommandExecutor implements CommandExecutor {
         }
         if (args.length == 1) {
             if (args[0].equals("list")) {
-                sender.sendMessage(oddGive.logPrefix + "You are " + (oddGive.blacklist ? "dis" : "") + "allowed these items: " + oddGive.lists.get(sender).toString());
                 return true;
             }
         }
@@ -61,9 +58,6 @@ public class OddGiveCommandExecutor implements CommandExecutor {
             try {
                 ItemStack itemStack = OddItem.getItemStack(args[i]);
                 boolean deny = false;
-                for (ItemStack listItem : oddGive.lists.get(sender)) {
-                    if (OddItem.compare(listItem, itemStack)) deny = true;
-                }
                 if (deny) {
                     sender.sendMessage(oddGive.logPrefix + "Not allowed: " + args[i]);
                     continue;
@@ -77,37 +71,12 @@ public class OddGiveCommandExecutor implements CommandExecutor {
                 itemStack.setAmount(amount);
                 items.add(itemStack);
             } catch (IllegalArgumentException e) {
-                if (oddGive.kits.get(args[i]) == null) {
-                    sender.sendMessage(oddGive.logPrefix + "Unknown item \"" + args[i] + "\" - did you mean \"" + e.getMessage() + "\"?");
-                } else {
-                    OddItemGroup kit = oddGive.kits.get(args[i]);
-                    for (ItemStack itemStack : kit) {
-                        boolean deny = false;
-                        for (ItemStack listItem : oddGive.lists.get(sender)) {
-                            if (OddItem.compare(listItem, itemStack)) deny = true;
-                        }
-                        if (deny) {
-                            sender.sendMessage(oddGive.logPrefix + "Not allowed: " + args[i]);
-                            continue;
-                        } else {
-                            items.add(itemStack);
-                        }
-                    }
-                }
+                sender.sendMessage(oddGive.logPrefix + "Unknown item \"" + args[i] + "\" - did you mean \"" + e.getMessage() + "\"?");
             }
         }
         for (ItemStack itemStack : items) {
             for (Player player : players) {
                 boolean deny = false;
-                for (ItemStack listItem : oddGive.lists.get(player)) {
-                    if (!sender.hasPermission("oddgive.give.bypass") && OddItem.compare(listItem, itemStack)) {
-                        deny = true;
-                    }
-                }
-                if (deny) {
-                    sender.sendMessage(oddGive.logPrefix + "Not allowed: " + OddItem.getAliases(itemStack.getTypeId() + ";" + itemStack.getDurability()).get(0));
-                    continue;
-                }
                 player.getInventory().addItem(itemStack);
             }
         }
@@ -120,12 +89,6 @@ public class OddGiveCommandExecutor implements CommandExecutor {
             try {
                 ItemStack itemStack = OddItem.getItemStack(args[i]);
                 boolean deny = false;
-                for (ItemStack listItem : oddGive.lists.get(sender)) {
-                    if (OddItem.compare(listItem, itemStack)) {
-                        deny = true;
-                        break;
-                    }
-                }
                 if (deny) {
                     sender.sendMessage(oddGive.logPrefix + "Not allowed: " + args[i]);
                     continue;
@@ -139,23 +102,7 @@ public class OddGiveCommandExecutor implements CommandExecutor {
                 itemStack.setAmount(amount);
                 items.add(itemStack);
             } catch (IllegalArgumentException e) {
-                if (oddGive.kits.get(args[i]) == null) {
-                    sender.sendMessage(oddGive.logPrefix + "Unknown item \"" + args[i] + "\" - did you mean \"" + e.getMessage() + "\"?");
-                } else {
-                    OddItemGroup kit = oddGive.kits.get(args[i]);
-                    for (ItemStack itemStack : kit) {
-                        boolean deny = false;
-                        for (ItemStack listItem : oddGive.lists.get(sender)) {
-                            if (OddItem.compare(listItem, itemStack)) deny = true;
-                        }
-                        if (deny) {
-                            sender.sendMessage(oddGive.logPrefix + "Not allowed: " + args[i]);
-                            continue;
-                        } else {
-                            items.add(itemStack);
-                        }
-                    }
-                }
+                sender.sendMessage(oddGive.logPrefix + "Unknown item \"" + args[i] + "\" - did you mean \"" + e.getMessage() + "\"?");
             }
         }
         for (ItemStack itemStack : items) {

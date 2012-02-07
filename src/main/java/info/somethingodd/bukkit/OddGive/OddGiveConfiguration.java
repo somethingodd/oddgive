@@ -15,39 +15,19 @@ package info.somethingodd.bukkit.OddGive;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import java.io.File;
-
 /**
  * @author Gordon Pettey (petteyg359@gmail.com)
  */
 public class OddGiveConfiguration {
     private OddGive oddGive;
-    private File configurationFile;
-    private YamlConfiguration defaultConfiguration;
-    private YamlConfiguration configuration;
+    private YamlConfiguration yamlConfiguration;
 
     public OddGiveConfiguration(OddGive oddGive) {
         this.oddGive = oddGive;
     }
 
     protected void configure() {
-        defaultConfiguration = new YamlConfiguration();
-        try {
-            defaultConfiguration.load(oddGive.getResource("OddGive.yml"));
-        } catch (Exception e) {
-            oddGive.log.warning(oddGive.logPrefix + "Error loading default configuration! " + e.getMessage());
-            e.printStackTrace();
-        }
-        configurationFile = new File(oddGive.getDataFolder() + File.separator + "OddGive.yml");
-        configuration = new YamlConfiguration();
-        configuration.setDefaults(defaultConfiguration);
-        try {
-            configuration.load(configurationFile);
-        } catch (Exception e) {
-            oddGive.log.severe("Couldn't open configuration file! " + e.getMessage());
-            e.printStackTrace();
-        }
-        oddGive.blacklist = configuration.getBoolean("blacklist");
-        oddGive.defaultQuantity = configuration.getInt("defaultQuantity");
+        yamlConfiguration = (YamlConfiguration) oddGive.getConfig();
+        oddGive.defaultQuantity = yamlConfiguration.getInt("defaultQuantity");
     }
 }
