@@ -1,47 +1,146 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>info.somethingodd.bukkit</groupId>
+    <groupId>info.somethingodd</groupId>
     <artifactId>OddGive</artifactId>
     <version>dev-SNAPSHOT</version>
     <name>OddGive</name>
-    <url>http://bukkit.somethingodd.info</url>
+    <url>http://somethingodd.info/OddGive</url>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.0</version>
+                <configuration>
+                    <reportPlugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-project-info-reports-plugin</artifactId>
+                            <version>2.4</version>
+                            <reportSets>
+                                <reportSet>
+                                    <reports>
+                                        <report>dependencies</report>
+                                        <report>issue-tracking</report>
+                                        <report>license</report>
+                                        <report>project-team</report>
+                                        <report>scm</report>
+                                    </reports>
+                                </reportSet>
+                            </reportSets>
+                        </plugin>
+                    </reportPlugins>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.11</version>
+                <configuration>
+                    <parallel>methods</parallel>
+                    <threadCount>2</threadCount>
+                    <useFile>false</useFile>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
     <dependencies>
         <dependency>
-            <groupId>info.somethingodd.bukkit</groupId>
+            <groupId>info.somethingodd</groupId>
             <artifactId>OddItem</artifactId>
             <version>dev-SNAPSHOT</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.getspout</groupId>
-            <artifactId>spoutapi</artifactId>
-            <version>dev-SNAPSHOT</version>
-            <type>jar</type>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.1-R3</version>
+            <version>1.1-R4</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>hamcrest-core</artifactId>
+                    <groupId>org.hamcrest</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-library</artifactId>
+            <version>1.2.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>1.9.0</version>
             <type>jar</type>
-            <scope>compile</scope>
+            <scope>test</scope>
         </dependency>
     </dependencies>
-    <repositories>
-        <repository>
-            <id>bukkit</id>
-            <url>http://repo.bukkit.org/content/groups/public</url>
-        </repository>
+    <distributionManagement>
+        <downloadUrl>http://repo.somethingodd.info/content/repositories/releases/</downloadUrl>
         <repository>
             <id>somethingodd</id>
-            <url>http://repo.somethingodd.info</url>
+            <url>http://repo.somethingodd.info/content/repositories/releases/</url>
         </repository>
-        <repository>
-            <id>spout</id>
-            <url>http://repo.getspout.org</url>
-        </repository>
-    </repositories>
+        <snapshotRepository>
+            <id>somethingodd-snapshots</id>
+            <url>http://repo.somethingodd.info/content/repositories/snapshots/</url>
+        </snapshotRepository>
+        <site>
+            <id>somethingodd.info</id>
+            <url>file:///var/www/somethingodd.info/OddGive</url>
+        </site>
+    </distributionManagement>
+    <ciManagement>
+        <system>jenkins</system>
+        <url>http://ci.somethingodd.info</url>
+    </ciManagement>
+    <scm>
+        <developerConnection>scm:git:git@github.com:somethingodd/OddGive.git</developerConnection>
+        <connection>scm:git:git://github.com/somethingodd/OddGive.git</connection>
+        <url>https://github.com/somethingodd/OddGive/tree/master/</url>
+    </scm>
+    <licenses>
+        <license>
+            <name>GNU GPL v3</name>
+            <url>https://www.gnu.org/licenses/gpl-3.0-standalone.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <organization>
+        <name>SomethingOdd</name>
+        <url>http://somethingodd.info</url>
+    </organization>
+    <developers>
+        <developer>
+            <id>petteyg</id>
+            <name>Gordon Pettey</name>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <organization>SomethingOdd</organization>
+            <organizationUrl>http://somethingodd.info</organizationUrl>
+            <timezone>-6</timezone>
+        </developer>
+    </developers>
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/somethingodd/OddGive/issues</url>
+    </issueManagement>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>

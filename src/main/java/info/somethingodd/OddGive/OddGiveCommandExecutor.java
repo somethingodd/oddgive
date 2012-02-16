@@ -1,6 +1,6 @@
-package info.somethingodd.bukkit.OddGive;
+package info.somethingodd.OddGive;
 
-import info.somethingodd.bukkit.OddItem.OddItem;
+import info.somethingodd.OddItem.OddItem;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
