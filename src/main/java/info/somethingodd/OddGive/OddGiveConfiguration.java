@@ -15,6 +15,13 @@ package info.somethingodd.OddGive;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 /**
  * @author Gordon Pettey (petteyg359@gmail.com)
  */
@@ -27,7 +34,46 @@ public class OddGiveConfiguration {
     }
 
     protected void configure() {
+        String[] filenames = {"config.yml"};
+        try {
+            initialConfig(filenames);
+        } catch (Exception e) {
+            oddGive.log.warning("Exception writing initial configuration files: " + e.getMessage());
+            e.printStackTrace();
+        }
         yamlConfiguration = (YamlConfiguration) oddGive.getConfig();
         oddGive.defaultQuantity = yamlConfiguration.getInt("defaultQuantity");
+    }
+
+    private void initialConfig(String[] filenames) throws IOException {
+        for (String filename : filenames) {
+            File file = new File(oddGive.getDataFolder(), filename);
+            if (!file.exists()) {
+                BufferedReader src = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/" + filename)));
+                BufferedWriter dst = new BufferedWriter(new FileWriter(file));
+                try {
+                    file.mkdirs();
+                    file.createNewFile();
+                    src = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/" + filename)));
+                    dst = new BufferedWriter(new FileWriter(file));
+                    String line = src.readLine();
+                    while (line != null) {
+                        dst.write(line + "\n");
+                        line = src.readLine();
+                    }
+                    src.close();
+                    dst.close();
+                    oddGive.log.info("Wrote default " + filename);
+                } catch (IOException e) {
+                    oddGive.log.warning("Error writing default " + filename);
+                } finally {
+                    try {
+                        src.close();
+                        dst.close();
+                    } catch (IOException e) {
+                    }
+                }
+            }
+        }
     }
 }

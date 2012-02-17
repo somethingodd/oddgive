@@ -30,19 +30,17 @@ public class OddGive extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        log.info(logPrefix + "disabled");
+        log.info("disabled");
         OGCE = null;
         blacklist = null;
         log = null;
-        logPrefix = null;
         defaultQuantity = null;
     }
 
     @Override
     public void onEnable() {
-        log = getServer().getLogger();
-        logPrefix = "[" + getDescription().getName() + "] ";
-        log.info(logPrefix + getDescription().getVersion() + " enabled");
+        log = getLogger();
+        log.info(getDescription().getVersion() + " enabled");
         oddGiveConfiguration = new OddGiveConfiguration(this);
         oddGiveConfiguration.configure();
         OGCE = new OddGiveCommandExecutor(this);
