@@ -1,6 +1,7 @@
 package info.somethingodd.OddGive;
 
 import info.somethingodd.OddItem.OddItem;
+import info.somethingodd.OddItem.OddItemConfiguration;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -145,25 +146,7 @@ public class OddGiveCommandExecutor implements CommandExecutor {
                 player.getInventory().clear();
             } else {
                 for (ItemStack itemStack : items) {
-                    ItemStack[] inventory = player.getInventory().getContents();
-                    int amount = itemStack.getAmount();
-                    for (int j = 0; j < inventory.length; j++) {
-                        if (inventory[j] == null) continue;
-                        if (OddItem.compare(inventory[j], itemStack)) {
-                            if (amount == -1) {
-                                player.getInventory().remove(inventory[j]);
-                            } else {
-                                if (inventory[j].getAmount() > amount) {
-                                    inventory[j].setAmount(inventory[j].getAmount() - amount);
-                                    break;
-                                } else {
-                                    amount -= inventory[j].getAmount();
-                                    player.getInventory().remove(inventory[j]);
-                                    if (amount == 0) break;
-                                }
-                            }
-                        }
-                    }
+                    OddItem.removeItem(player, itemStack, (OddItemConfiguration.getMaxBlockId() < 256));
                 }
             }
         }
