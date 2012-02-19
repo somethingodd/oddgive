@@ -49,8 +49,8 @@ public class OddGiveConfiguration {
         for (String filename : filenames) {
             File file = new File(oddGive.getDataFolder(), filename);
             if (!file.exists()) {
-                BufferedReader src = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/" + filename)));
-                BufferedWriter dst = new BufferedWriter(new FileWriter(file));
+                BufferedReader src = null;
+                BufferedWriter dst = null;
                 try {
                     file.mkdirs();
                     file.createNewFile();
@@ -70,7 +70,7 @@ public class OddGiveConfiguration {
                     try {
                         src.close();
                         dst.close();
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                     }
                 }
             }
