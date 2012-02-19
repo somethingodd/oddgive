@@ -129,7 +129,7 @@ public class OddGiveCommandExecutor implements CommandExecutor {
         for (; i < args.length; i++) {
             try {
                 ItemStack item = OddItem.getItemStack(args[i]);
-                int amount = -1; //2304;
+                int amount = -1;
                 try {
                     amount = Integer.parseInt(args[i + 1]);
                     i++;
