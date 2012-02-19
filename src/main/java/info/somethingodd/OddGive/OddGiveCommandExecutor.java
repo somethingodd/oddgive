@@ -22,12 +22,12 @@ public class OddGiveCommandExecutor implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player) && label.equals("i")) {
-            sender.sendMessage(oddGive.logPrefix + "Try /give");
+            sender.sendMessage("Try /give");
             return true;
         }
         if (sender instanceof Player) {
             if (!sender.isOp() && ((!command.getName().equals("oddgive") && !sender.hasPermission("oddgive." + label)) || (command.getName().equals("oddgive") && !sender.hasPermission("oddgive." + args[0])))) {
-                sender.sendMessage(oddGive.logPrefix + "You are not worthy.");
+                sender.sendMessage("You are not worthy.");
                 return true;
             }
         }
@@ -60,7 +60,7 @@ public class OddGiveCommandExecutor implements CommandExecutor {
                 ItemStack itemStack = OddItem.getItemStack(args[i]);
                 boolean deny = false;
                 if (deny) {
-                    sender.sendMessage(oddGive.logPrefix + "Not allowed: " + args[i]);
+                    sender.sendMessage("Not allowed: " + args[i]);
                     continue;
                 }
                 int amount = oddGive.defaultQuantity;
@@ -72,7 +72,7 @@ public class OddGiveCommandExecutor implements CommandExecutor {
                 itemStack.setAmount(amount);
                 items.add(itemStack);
             } catch (IllegalArgumentException e) {
-                sender.sendMessage(oddGive.logPrefix + "Unknown item \"" + args[i] + "\" - did you mean \"" + e.getMessage() + "\"?");
+                sender.sendMessage("Unknown item \"" + args[i] + "\" - did you mean \"" + e.getMessage() + "\"?");
             }
         }
         for (ItemStack itemStack : items) {
@@ -91,7 +91,7 @@ public class OddGiveCommandExecutor implements CommandExecutor {
                 ItemStack itemStack = OddItem.getItemStack(args[i]);
                 boolean deny = false;
                 if (deny) {
-                    sender.sendMessage(oddGive.logPrefix + "Not allowed: " + args[i]);
+                    sender.sendMessage("Not allowed: " + args[i]);
                     continue;
                 }
                 int amount = oddGive.defaultQuantity;
@@ -103,7 +103,7 @@ public class OddGiveCommandExecutor implements CommandExecutor {
                 itemStack.setAmount(amount);
                 items.add(itemStack);
             } catch (IllegalArgumentException e) {
-                sender.sendMessage(oddGive.logPrefix + "Unknown item \"" + args[i] + "\" - did you mean \"" + e.getMessage() + "\"?");
+                sender.sendMessage("Unknown item \"" + args[i] + "\" - did you mean \"" + e.getMessage() + "\"?");
             }
         }
         for (ItemStack itemStack : items) {
@@ -122,7 +122,7 @@ public class OddGiveCommandExecutor implements CommandExecutor {
             players.add(player);
         }
         if (!players.isEmpty() && !sender.hasPermission("oddgive.i0.other")) {
-            sender.sendMessage(oddGive.logPrefix + "Not allowed.");
+            sender.sendMessage("Not allowed.");
             return true;
         }
         if (players.isEmpty()) players.add((Player) sender);
@@ -138,7 +138,7 @@ public class OddGiveCommandExecutor implements CommandExecutor {
                 item.setAmount(amount);
                 items.add(item);
             } catch (IllegalArgumentException e) {
-                sender.sendMessage(oddGive.logPrefix + "Unknown item \"" + args[i] + "\" - did you mean \"" + e.getMessage() + "\"?");
+                sender.sendMessage("Unknown item \"" + args[i] + "\" - did you mean \"" + e.getMessage() + "\"?");
             }
         }
         for (Player player : players) {

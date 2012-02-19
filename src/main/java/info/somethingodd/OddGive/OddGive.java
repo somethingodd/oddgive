@@ -21,7 +21,6 @@ import java.util.logging.Logger;
  * @author Gordon Pettey (petteyg359@gmail.com)
  */
 public class OddGive extends JavaPlugin {
-    protected String logPrefix;
     protected Integer defaultQuantity;
     protected Logger log;
     protected Boolean blacklist;
