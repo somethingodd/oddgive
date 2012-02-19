@@ -52,7 +52,7 @@ public class OddGiveConfiguration {
                 BufferedReader src = null;
                 BufferedWriter dst = null;
                 try {
-                    file.mkdirs();
+                    file.getParentFile().mkdirs();
                     file.createNewFile();
                     src = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/" + filename)));
                     dst = new BufferedWriter(new FileWriter(file));
