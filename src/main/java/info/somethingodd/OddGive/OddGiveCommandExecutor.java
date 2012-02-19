@@ -146,7 +146,7 @@ public class OddGiveCommandExecutor implements CommandExecutor {
                 player.getInventory().clear();
             } else {
                 for (ItemStack itemStack : items) {
-                    OddItem.removeItem(player, itemStack, (OddItemConfiguration.getMaxBlockId() < 256));
+                    OddItem.removeItem(player, itemStack, (itemStack.getTypeId() <= OddItemConfiguration.getMaxBlockId()));
                 }
             }
         }
