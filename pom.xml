@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>info.somethingodd</groupId>
     <artifactId>OddGive</artifactId>
-    <version>dev-SNAPSHOT</version>
+    <version>0.9.1-SNAPSHOT</version>
     <name>OddGive</name>
     <url>http://somethingodd.info/OddGive</url>
     <build>
@@ -57,12 +57,12 @@
         <dependency>
             <groupId>info.somethingodd</groupId>
             <artifactId>OddItem</artifactId>
-            <version>dev-SNAPSHOT</version>
+            <version>0.9-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.1-R4</version>
+            <version>1.1-R5-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -86,7 +86,6 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>1.9.0</version>
-            <type>jar</type>
             <scope>test</scope>
         </dependency>
     </dependencies>

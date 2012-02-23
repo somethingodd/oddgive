@@ -34,9 +34,8 @@ public class OddGiveConfiguration {
     }
 
     protected void configure() {
-        String[] filenames = {"config.yml"};
         try {
-            initialConfig(filenames);
+            initialConfig("config.yml");
         } catch (Exception e) {
             oddGive.log.warning("Exception writing initial configuration files: " + e.getMessage());
             e.printStackTrace();
@@ -45,33 +44,31 @@ public class OddGiveConfiguration {
         oddGive.defaultQuantity = yamlConfiguration.getInt("defaultQuantity");
     }
 
-    private void initialConfig(String[] filenames) throws IOException {
-        for (String filename : filenames) {
-            File file = new File(oddGive.getDataFolder(), filename);
-            if (!file.exists()) {
-                BufferedReader src = null;
-                BufferedWriter dst = null;
+    private void initialConfig(String filename) throws IOException {
+        File file = new File(oddGive.getDataFolder(), filename);
+        if (!file.exists()) {
+            BufferedReader src = null;
+            BufferedWriter dst = null;
+            try {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+                src = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/" + filename)));
+                dst = new BufferedWriter(new FileWriter(file));
+                String line = src.readLine();
+                while (line != null) {
+                    dst.write(line + "\n");
+                    line = src.readLine();
+                }
+                src.close();
+                dst.close();
+                oddGive.log.info("Wrote default " + filename);
+            } catch (IOException e) {
+                oddGive.log.warning("Error writing default " + filename);
+            } finally {
                 try {
-                    file.getParentFile().mkdirs();
-                    file.createNewFile();
-                    src = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/" + filename)));
-                    dst = new BufferedWriter(new FileWriter(file));
-                    String line = src.readLine();
-                    while (line != null) {
-                        dst.write(line + "\n");
-                        line = src.readLine();
-                    }
                     src.close();
                     dst.close();
-                    oddGive.log.info("Wrote default " + filename);
-                } catch (IOException e) {
-                    oddGive.log.warning("Error writing default " + filename);
-                } finally {
-                    try {
-                        src.close();
-                        dst.close();
-                    } catch (Exception e) {
-                    }
+                } catch (Exception e) {
                 }
             }
         }
