@@ -1,7 +1,7 @@
 name: OddGive
 main: info.somethingodd.OddGive.OddGive
 version: ${pom.version}
-website: http://bukkit.somethingodd.info
+website: ${pom.url}
 author: petteyg359
 depend: [OddItem]
 description: >
