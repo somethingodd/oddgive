@@ -6,12 +6,11 @@
     <artifactId>oddgive</artifactId>
     <version>0.9.1-SNAPSHOT</version>
     <name>oddgive</name>
-    <url>${url.root}/${project.name}</url>
+    <url>http://somethingodd.info/oddgive</url>
     <parent>
         <groupId>info.somethingodd</groupId>
         <artifactId>somethingodd-parent</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-        <relativePath>somethingodd-parent</relativePath>
+        <version>1.0.0</version>
     </parent>
     <build>
         <resources>
@@ -39,22 +38,11 @@
             </resource>
         </resources>
     </build>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>info.somethingodd</groupId>
-                <artifactId>somethingodd-parent</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>info.somethingodd</groupId>
             <artifactId>odditem</artifactId>
-            <version>[0.9.0-SNAPSHOT,0.10)</version>
+            <version>[0.9,0.10)</version>
         </dependency>
     </dependencies>
     <distributionManagement>
